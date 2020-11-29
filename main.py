@@ -67,7 +67,7 @@ def experiment_2():
     plt.savefig(f'plot_top_losses.png')
     clear_pyplot_memory()
 
-    img = PILImage.create("dataset/cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171")
+    img = PILImage.create("dataset/cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     x, = first(dls.test_dl([img]))
 
     class Hook():
