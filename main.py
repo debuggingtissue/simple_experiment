@@ -92,6 +92,8 @@ def experiment_2():
     x_dec.show(ctx=ax)
     ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
               interpolation='bilinear', cmap='magma');
+    plt.savefig(f'last_layer_activation_plot.png')
+    clear_pyplot_memory()
 
 
 if __name__ == '__main__':
