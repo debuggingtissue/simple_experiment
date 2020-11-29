@@ -52,7 +52,7 @@ def experiment_2():
     clear_pyplot_memory()
 
     learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(10)
+    learn.fine_tune(5)
     learn.recorder.plot_loss()
     plt.savefig(f'plot_loss.png')
     clear_pyplot_memory()
@@ -67,6 +67,31 @@ def experiment_2():
     plt.savefig(f'plot_top_losses.png')
     clear_pyplot_memory()
 
+    img = PILImage.create("dataset/cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171")
+    x, = first(dls.test_dl([img]))
+
+    class Hook():
+        def __init__(self, m):
+            self.hook = m.register_forward_hook(self.hook_func)
+        def hook_func(self, m, i, o): self.stored = o.detach().clone()
+        def __enter__(self, *args): return self
+        def __exit__(self, *args): self.hook.remove()
+
+    with Hook(learn.model[0]) as hook:
+        with torch.no_grad(): output = learn.model.eval()(x.cuda())
+        act = hook.stored
+
+    # F.softmax(output, dim=-1)
+    # dls.vocab
+    # x.shape
+    cam_map = torch.einsum('ck,kij->cij', learn.model[1][-1].weight, act)
+    # cam_map.shape
+
+    x_dec = TensorImage(dls.train.decode((x,))[0][0])
+    _, ax = plt.subplots()
+    x_dec.show(ctx=ax)
+    ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+              interpolation='bilinear', cmap='magma');
 
 
 if __name__ == '__main__':
