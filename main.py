@@ -62,6 +62,12 @@ def experiment_2():
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
 
+    interp = ClassificationInterpretation.from_learner(learn)
+    interp.plot_top_losses(5, nrows=1)
+    plt.savefig(f'plot_top_losses.png')
+    clear_pyplot_memory()
+
+
 
 if __name__ == '__main__':
    print("hey")
