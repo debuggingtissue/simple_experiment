@@ -52,7 +52,7 @@ def experiment_2():
     clear_pyplot_memory()
 
     learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(100)
+    learn.fine_tune(400)
     learn.recorder.plot_loss()
     plt.savefig(f'plot_loss.png')
     clear_pyplot_memory()
@@ -63,7 +63,7 @@ def experiment_2():
     clear_pyplot_memory()
 
     interp = ClassificationInterpretation.from_learner(learn)
-    interp.plot_top_losses(5, nrows=5)
+    interp.plot_top_losses(20, nrows=5)
     plt.savefig(f'plot_top_losses.png')
     clear_pyplot_memory()
 
