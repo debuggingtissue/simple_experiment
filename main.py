@@ -52,7 +52,7 @@ def experiment_2():
     clear_pyplot_memory()
 
     learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(3)
+    learn.fine_tune(2)
     learn.recorder.plot_loss()
     plt.savefig(f'plot_loss.png')
     clear_pyplot_memory()
@@ -63,70 +63,70 @@ def experiment_2():
     clear_pyplot_memory()
 
     interp = ClassificationInterpretation.from_learner(learn)
-    interp.plot_top_losses(5, nrows=1)
+    interp.plot_top_losses(5, nrows=5)
     plt.savefig(f'plot_top_losses.png')
     clear_pyplot_memory()
 
-    img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
-    x, = first(dls.test_dl([img]))
-
-    class Hook():
-        def __init__(self, m):
-            self.hook = m.register_forward_hook(self.hook_func)
-        def hook_func(self, m, i, o): self.stored = o.detach().clone()
-        def __enter__(self, *args): return self
-        def __exit__(self, *args): self.hook.remove()
-
-    with Hook(learn.model[0]) as hook:
-        with torch.no_grad(): output = learn.model.eval()(x)
-        act = hook.stored
-
-    cam_map = torch.einsum('ck,kij->cij', learn.model[1][-1].weight, act[0])
-
-
-    x_dec = TensorImage(dls.train.decode((x,))[0][0])
-    _, ax = plt.subplots()
-    x_dec.show(ctx=ax)
-    plt.title("last layer activation")
-    print(len(cam_map))
-    ax.imshow(cam_map[0].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
-              interpolation='bilinear', cmap='magma');
-    plt.savefig(f'layer_last_activation_plot.png')
-    clear_pyplot_memory()
-
-    print(F.softmax(output, dim=-1))
-    print(dls.vocab)
-    # print(x.shape)
-    # print(learn.model[1][-1].weight.shape)
-    # print(act.shape)
-    # cam_map.shape
-    print(learn.model[0])
-    class HookBwd():
-        def __init__(self, m):
-            self.hook = m.register_backward_hook(self.hook_func)
-        def hook_func(self, m, gi, go): self.stored = go[0].detach().clone()
-        def __enter__(self, *args): return self
-        def __exit__(self, *args): self.hook.remove()
-
-    for layer_nr in [0, 4, 5, 6, 7]:
-        cls = 0
-        print(learn.model[0][layer_nr])
-        with HookBwd(learn.model[0][layer_nr]) as hookg:
-            with Hook(learn.model[0][layer_nr]) as hook:
-                output = learn.model.eval()(x)
-                act = hook.stored
-            output[0, cls].backward()
-            grad = hookg.stored
-
-        w = grad[0].mean(dim=[1, 2], keepdim=True)
-        cam_map = (w * act[0]).sum(0)
-
-        _, ax = plt.subplots()
-        x_dec.show(ctx=ax)
-        ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
-                  interpolation='bilinear', cmap='magma');
-        plt.savefig(f'layer_{layer_nr}_activation_plot.png')
-        clear_pyplot_memory()
+    # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
+    # x, = first(dls.test_dl([img]))
+    #
+    # class Hook():
+    #     def __init__(self, m):
+    #         self.hook = m.register_forward_hook(self.hook_func)
+    #     def hook_func(self, m, i, o): self.stored = o.detach().clone()
+    #     def __enter__(self, *args): return self
+    #     def __exit__(self, *args): self.hook.remove()
+    #
+    # with Hook(learn.model[0]) as hook:
+    #     with torch.no_grad(): output = learn.model.eval()(x)
+    #     act = hook.stored
+    #
+    # cam_map = torch.einsum('ck,kij->cij', learn.model[1][-1].weight, act[0])
+    #
+    # x_dec = TensorImage(dls.train.decode((x,))[0][0])
+    # _, ax = plt.subplots()
+    # x_dec.show(ctx=ax)
+    # plt.title("last layer activation")
+    # print(len(cam_map))
+    #
+    # cls = 0
+    # ax.imshow(cam_map[cls].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+    #           interpolation='bilinear', cmap='magma');
+    # plt.savefig(f'layer_last_activation_plot.png')
+    # clear_pyplot_memory()
+    #
+    # print(F.softmax(output, dim=-1))
+    # print(dls.vocab)
+    # # print(x.shape)
+    # # print(learn.model[1][-1].weight.shape)
+    # # print(act.shape)
+    # # cam_map.shape
+    # print(learn.model[0])
+    # class HookBwd():
+    #     def __init__(self, m):
+    #         self.hook = m.register_backward_hook(self.hook_func)
+    #     def hook_func(self, m, gi, go): self.stored = go[0].detach().clone()
+    #     def __enter__(self, *args): return self
+    #     def __exit__(self, *args): self.hook.remove()
+    #
+    # for layer_nr in [0, 4, 5, 6, 7]:
+    #     print(learn.model[0][layer_nr])
+    #     with HookBwd(learn.model[0][layer_nr]) as hookg:
+    #         with Hook(learn.model[0][layer_nr]) as hook:
+    #             output = learn.model.eval()(x)
+    #             act = hook.stored
+    #         output[0, cls].backward()
+    #         grad = hookg.stored
+    #
+    #     w = grad[0].mean(dim=[1, 2], keepdim=True)
+    #     cam_map = (w * act[0]).sum(0)
+    #
+    #     _, ax = plt.subplots()
+    #     x_dec.show(ctx=ax)
+    #     ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+    #               interpolation='bilinear', cmap='magma');
+    #     plt.savefig(f'layer_{layer_nr}_activation_plot.png')
+    #     clear_pyplot_memory()
 
     # with HookBwd(learn.model[0][-5]) as hookg:
     #     with Hook(learn.model[0][-5]) as hook:
