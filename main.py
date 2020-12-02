@@ -52,7 +52,7 @@ def experiment_2():
     clear_pyplot_memory()
 
     learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(104)
+    learn.fine_tune(22)
     learn.recorder.plot_loss()
     plt.savefig(f'plot_loss.png')
     clear_pyplot_memory()
