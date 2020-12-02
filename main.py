@@ -5,15 +5,39 @@
 
 from fastai.vision.all import *
 import matplotlib
+
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+import os
+import sys
+from PIL import Image, ImageDraw, ImageOps
+
 
 def label_func(f): return f[0].isupper()
+
 
 def clear_pyplot_memory():
     plt.clf()
     plt.cla()
     plt.close()
+
+
+def merge_images_horizontally(list_of_image_paths):
+    images = [Image.open(x) for x in list_of_image_paths]
+    widths, heights = zip(*(i.size for i in images))
+
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_im = Image.new('RGB', (total_width, max_height))
+
+    x_offset = 0
+    for im in images:
+        new_im.paste(im, (x_offset, 0))
+        x_offset += im.size[0]
+
+    return new_im
+
 
 def experiment_1():
     path = untar_data(URLs.PETS)
@@ -35,12 +59,31 @@ def experiment_1():
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
 
+def merge_images_vertically(list_of_image_paths):
+    images = [Image.open(x) for x in list_of_image_paths]
+    widths, heights = zip(*(i.size for i in images))
+
+    total_height = sum(heights)
+    max_width = max(widths)
+
+    new_im = Image.new('RGB', (max_width, total_height))
+
+    y_offset = 0
+    for im in images:
+        new_im.paste(im, (0, y_offset))
+        y_offset += im.size[1]
+
+    return new_im
+
 def save_loss_plot(learner, epochs):
     learner.recorder.plot_loss()
     plt.xlabel("iterations")
     plt.ylabel("loss")
     plt.savefig(f'{epochs}_epochs_plot_loss.png')
     clear_pyplot_memory()
+
+from os import listdir
+from os.path import isfile, join
 
 # Cell
 @patch
@@ -52,23 +95,32 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
     if nrows is None and ncols is None:
         nrows = int(math.sqrt(n))
         ncols = int(np.ceil(n / nrows))
-    elif nrows is None: nrows = int(np.ceil(n / ncols))
-    elif ncols is None: ncols = int(np.ceil(n / nrows))
+    elif nrows is None:
+        nrows = int(np.ceil(n / ncols))
+    elif ncols is None:
+        ncols = int(np.ceil(n / nrows))
     figsize = figsize or (ncols * 6, nrows * 4)
     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
     for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
         ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
         ax.set_title(name if i > 1 else 'losses')
-        ax.set_xlim(0, len(metrics[:, i])-1)
+        ax.set_xlim(0, len(metrics[:, i]) - 1)
+        ax.set_xlabel("epoch nr.")
+        if name is "accuracy":
+            ax.set_ylabel("accuracy in %")
+        if i is 0:
+            ax.set_ylabel("loss value")
         ax.legend(loc='best')
     plt.show()
+
 
 # Cell
 @patch
 @delegates(subplots)
 def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
+
 
 def experiment_2(epoch_values):
     # path = untar_data(URLs.PETS)
@@ -92,7 +144,11 @@ def experiment_2(epoch_values):
         save_loss_plot(learn, epochs)
 
         learn.recorder.plot_metrics()
-        plt.savefig(f'{epochs}_epochs_plot_metrics.png')
+        plt.subplots_adjust(right=0.88)
+        plt.text(0.89, 0.5, f'epochs: 1000', fontsize=12, transform=plt.gcf().transFigure)
+        if not os.path.exists('metrics'):
+            os.makedirs('metrics')
+        plt.savefig(f'metrics/{epochs}_epochs_plot_metrics.png')
         clear_pyplot_memory()
 
         learn.predict(files[0])
@@ -104,6 +160,11 @@ def experiment_2(epoch_values):
         interp.plot_top_losses(20, nrows=5)
         plt.savefig(f'{epochs}_epochs_plot_top_losses.png')
         clear_pyplot_memory()
+
+    metrics_image_paths = [f for f in listdir("metrics") if isfile(join("metrics", f))]
+    metrics_overview_image = merge_images_vertically(metrics_image_paths)
+    metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
+
 
     # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     # x, = first(dls.test_dl([img]))
@@ -184,15 +245,7 @@ def experiment_2(epoch_values):
     # clear_pyplot_memory()
 
 
-
-
-
 if __name__ == '__main__':
-   print("hey")
-   experiment_2([200, 300, 400, 500, 1000])
-
-
-
-
+    experiment_2([30, 70, 100, 500, 1000])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
