@@ -189,7 +189,7 @@ def experiment_2(epoch_values):
 
 if __name__ == '__main__':
    print("hey")
-   experiment_2([100, 200, 300, 400, 500])
+   experiment_2([200, 300, 400, 500, 1000])
 
 
 
