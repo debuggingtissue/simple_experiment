@@ -35,7 +35,42 @@ def experiment_1():
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
 
-def experiment_2():
+def save_loss_plot(learner, epochs):
+    learner.recorder.plot_loss()
+    plt.xlabel("iterations")
+    plt.ylabel("loss")
+    plt.savefig(f'{epochs}_epochs_plot_loss.png')
+    clear_pyplot_memory()
+
+# Cell
+@patch
+@delegates(subplots)
+def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
+    metrics = np.stack(self.values)
+    names = self.metric_names[1:-1]
+    n = len(names) - 1
+    if nrows is None and ncols is None:
+        nrows = int(math.sqrt(n))
+        ncols = int(np.ceil(n / nrows))
+    elif nrows is None: nrows = int(np.ceil(n / ncols))
+    elif ncols is None: ncols = int(np.ceil(n / nrows))
+    figsize = figsize or (ncols * 6, nrows * 4)
+    fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
+    axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
+    for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
+        ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
+        ax.set_title(name if i > 1 else 'losses')
+        ax.set_xlim(0, len(metrics[:, i])-1)
+        ax.legend(loc='best')
+    plt.show()
+
+# Cell
+@patch
+@delegates(subplots)
+def plot_metrics(self: Learner, **kwargs):
+    self.recorder.plot_metrics(**kwargs)
+
+def experiment_2(epoch_values):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
     path = "dataset/"
@@ -51,21 +86,24 @@ def experiment_2():
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
-    learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(22)
-    learn.recorder.plot_loss()
-    plt.savefig(f'plot_loss.png')
-    clear_pyplot_memory()
+    for epochs in epoch_values:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epochs)
+        save_loss_plot(learn, epochs)
 
-    learn.predict(files[0])
-    learn.show_results()
-    plt.savefig(f'plot_predictions.png')
-    clear_pyplot_memory()
+        learn.recorder.plot_metrics()
+        plt.savefig(f'{epochs}_epochs_plot_metrics.png')
+        clear_pyplot_memory()
 
-    interp = ClassificationInterpretation.from_learner(learn)
-    interp.plot_top_losses(20, nrows=5)
-    plt.savefig(f'plot_top_losses.png')
-    clear_pyplot_memory()
+        learn.predict(files[0])
+        learn.show_results()
+        plt.savefig(f'{epochs}_epochs_plot_predictions.png')
+        clear_pyplot_memory()
+
+        interp = ClassificationInterpretation.from_learner(learn)
+        interp.plot_top_losses(20, nrows=5)
+        plt.savefig(f'{epochs}_epochs_plot_top_losses.png')
+        clear_pyplot_memory()
 
     # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     # x, = first(dls.test_dl([img]))
@@ -151,7 +189,7 @@ def experiment_2():
 
 if __name__ == '__main__':
    print("hey")
-   experiment_2()
+   experiment_2([10,20,30,40,50,60,70,80,100])
 
 
 
