@@ -151,7 +151,7 @@ def experiment_2(epoch_values):
         plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
         if not os.path.exists('metrics'):
             os.makedirs('metrics')
-        plt.savefig(f'metrics/{epochs}_epochs_plot_metrics.png')
+        plt.savefig(f'metrics/{epochs}.png')
         clear_pyplot_memory()
 
         learn.predict(files[0])
