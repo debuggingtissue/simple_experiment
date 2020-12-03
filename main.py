@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 import os
 import sys
 from PIL import Image, ImageDraw, ImageOps
+from os import listdir
+from os.path import isfile, join
 
 
 def label_func(f): return f[0].isupper()
@@ -59,6 +61,7 @@ def experiment_1():
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
 
+
 def merge_images_vertically(list_of_image_paths):
     images = [Image.open(x) for x in list_of_image_paths]
     widths, heights = zip(*(i.size for i in images))
@@ -75,6 +78,7 @@ def merge_images_vertically(list_of_image_paths):
 
     return new_im
 
+
 def save_loss_plot(learner, epochs):
     learner.recorder.plot_loss()
     plt.xlabel("iterations")
@@ -82,8 +86,6 @@ def save_loss_plot(learner, epochs):
     plt.savefig(f'{epochs}_epochs_plot_loss.png')
     clear_pyplot_memory()
 
-from os import listdir
-from os.path import isfile, join
 
 # Cell
 @patch
@@ -162,10 +164,14 @@ def experiment_2(epoch_values):
         plt.savefig(f'{epochs}_epochs_plot_top_losses.png')
         clear_pyplot_memory()
 
-    metrics_image_paths = [f for f in listdir("metrics") if isfile(join("metrics", f))]
-    metrics_overview_image = merge_images_vertically(metrics_image_paths)
-    metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
+    metrics_image_files = listdir("metrics")
+    metrics_image_file_paths = []
+    for image_file in metrics_image_files:
+        metrics_image_file_paths.append("metrics/" + image_file)
+    metrics_image_file_paths.sort()
 
+    metrics_overview_image = merge_images_vertically(metrics_image_file_paths)
+    metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
 
     # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     # x, = first(dls.test_dl([img]))
@@ -247,6 +253,6 @@ def experiment_2(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_2([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200])
+    experiment_2([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
