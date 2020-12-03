@@ -142,10 +142,11 @@ def experiment_2(epoch_values):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epochs)
         save_loss_plot(learn, epochs)
+        clear_pyplot_memory()
 
         learn.recorder.plot_metrics()
         plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: 1000', fontsize=12, transform=plt.gcf().transFigure)
+        plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
         if not os.path.exists('metrics'):
             os.makedirs('metrics')
         plt.savefig(f'metrics/{epochs}_epochs_plot_metrics.png')
@@ -246,6 +247,6 @@ def experiment_2(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_2([30, 70, 100, 500, 1000])
+    experiment_2([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
