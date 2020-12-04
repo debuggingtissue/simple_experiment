@@ -124,7 +124,49 @@ def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
 
 
-def experiment_2(epoch_values):
+def experiment_1a():
+    path = untar_data(URLs.PETS)
+    print(path.ls())
+    files = get_image_files(path / "images")
+    dls = ImageDataLoaders.from_name_func(path, files, label_func, item_tfms=Resize(224))
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    learn = cnn_learner(dls, resnet18, metrics=error_rate)
+    learn.fine_tune(10)
+    learn.recorder.plot_loss()
+    plt.savefig(f'plot_loss.png')
+    clear_pyplot_memory()
+
+    learn.predict(files[0])
+    learn.show_results()
+    plt.savefig(f'plot_predictions.png')
+    clear_pyplot_memory()
+
+def experiment_2a(epochs):
+    path = "dataset/"
+    files = get_image_files("dataset")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+
+    learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+    learn.fit(epochs)
+
+    learn.recorder.plot_metrics()
+    plt.subplots_adjust(right=0.88)
+    plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
+    if not os.path.exists('experiment_2a'):
+        os.makedirs('experiment_2a')
+    plt.savefig(f'experiment_2a/{epochs}.png')
+    clear_pyplot_memory()
+
+def experiment_2b(epoch_values):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
     path = "dataset/"
@@ -253,6 +295,7 @@ def experiment_2(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_2([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    experiment_2a(300)
+    # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
