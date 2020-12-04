@@ -295,7 +295,7 @@ def experiment_2b(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_2a(300)
+    experiment_2a(1000)
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
