@@ -124,7 +124,35 @@ def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
 
 
-def experiment_1a():
+def experiment_1a(epochs):
+    path = untar_data(URLs.PETS)
+    print(path.ls())
+    files = get_image_files(path / "images")
+    dls = ImageDataLoaders.from_name_func(path, files, label_func, item_tfms=Resize(224))
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        print(learn.opt)
+        print(learn.wd)
+        print(learn.moms)
+        print(learn.lr)
+        print(learn.opt_func)
+        print(learn.opt.hypers)
+
+        learn.fit(epoch_nr)
+        learn.recorder.plot_metrics()
+        plt.subplots_adjust(right=0.88)
+        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+        if not os.path.exists('experiment_1a'):
+            os.makedirs('experiment_1a')
+        plt.savefig(f'experiment_1a/{epoch_nr}.png')
+        clear_pyplot_memory()
+
+def experiment_1b():
     path = untar_data(URLs.PETS)
     print(path.ls())
     files = get_image_files(path / "images")
@@ -156,6 +184,13 @@ def experiment_2a(epochs):
     dls = data_block.dataloaders(Path(path), bs=10)
 
     learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+    print(learn.opt)
+    print(learn.wd)
+    print(learn.moms)
+    print(learn.lr)
+    print(learn.opt_func)
+    print(learn.opt.hypers)
+
     learn.fit(epochs)
 
     learn.recorder.plot_metrics()
@@ -295,7 +330,8 @@ def experiment_2b(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_2a(1000)
+    experiment_1a([10, 50, 100, 200, 400])
+    #experiment_2a(2)
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
