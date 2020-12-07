@@ -93,7 +93,7 @@ def save_loss_plot(learner, epochs):
 def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
     metrics = np.stack(self.values)
     names = self.metric_names[1:-1]
-    n = len(names) - 1
+    n = len(names) - 1 - 1
     if nrows is None and ncols is None:
         nrows = int(math.sqrt(n))
         ncols = int(np.ceil(n / nrows))
@@ -105,12 +105,14 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
     for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
+        if i is 0:
+            continue
         ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
-        ax.set_title(name if i > 1 else 'losses')
+        ax.set_title(name if i > 1 else 'loss curve')
         ax.set_xlim(0, len(metrics[:, i]) - 1)
         ax.set_xlabel("epoch nr.")
         if name is "accuracy":
-            ax.set_ylabel("accuracy in %")
+            ax.set_ylabel("accuracy (%)")
         if i is 0:
             ax.set_ylabel("loss value")
         ax.legend(loc='best')
@@ -124,7 +126,7 @@ def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
 
 
-def experiment_1a(epochs):
+def experiment_1a(epochs, output_directory="experiment_1a"):
     path = untar_data(URLs.PETS)
     print(path.ls())
     files = get_image_files(path / "images")
@@ -132,7 +134,6 @@ def experiment_1a(epochs):
     dls.show_batch()
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
-
 
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
@@ -143,14 +144,21 @@ def experiment_1a(epochs):
         print(learn.opt_func)
         print(learn.opt.hypers)
 
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
         learn.fit(epoch_nr)
         learn.recorder.plot_metrics()
         plt.subplots_adjust(right=0.88)
         plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-        if not os.path.exists('experiment_1a'):
-            os.makedirs('experiment_1a')
-        plt.savefig(f'experiment_1a/{epoch_nr}.png')
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
         clear_pyplot_memory()
+
+        interp = ClassificationInterpretation.from_learner(learn)
+        interp.plot_top_losses(20, nrows=5)
+        plt.savefig(f'{output_directory}/{epochs}_epochs_loss.png')
+        clear_pyplot_memory()
+
 
 def experiment_1b():
     path = untar_data(URLs.PETS)
@@ -171,6 +179,7 @@ def experiment_1b():
     learn.show_results()
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
+
 
 def experiment_2a(epochs):
     path = "dataset/"
@@ -200,6 +209,7 @@ def experiment_2a(epochs):
         os.makedirs('experiment_2a')
     plt.savefig(f'experiment_2a/{epochs}.png')
     clear_pyplot_memory()
+
 
 def experiment_2b(epoch_values):
     # path = untar_data(URLs.PETS)
@@ -330,8 +340,8 @@ def experiment_2b(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_1a([10, 50, 100, 200, 400])
-    #experiment_2a(2)
+    experiment_1a([5, 10, 50])
+    # experiment_2a(2)
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
