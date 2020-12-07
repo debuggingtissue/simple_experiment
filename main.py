@@ -196,12 +196,12 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
 
 
     for epoch_nr in epochs:
-        print(learn.opt)
-        print(learn.wd)
-        print(learn.moms)
-        print(learn.lr)
-        print(learn.opt_func)
-        print(learn.opt.hypers)
+        # print(learn.opt)
+        # print(learn.wd)
+        # print(learn.moms)
+        # print(learn.lr)
+        # print(learn.opt_func)
+        # print(learn.opt.hypers)
 
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
 
@@ -271,12 +271,12 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
                            item_tfms=Resize(224))
     dls = data_block.dataloaders(Path(path), bs=10)
 
-    print(learn.opt)
-    print(learn.wd)
-    print(learn.moms)
-    print(learn.lr)
-    print(learn.opt_func)
-    print(learn.opt.hypers)
+    # print(learn.opt)
+    # print(learn.wd)
+    # print(learn.moms)
+    # print(learn.lr)
+    # print(learn.opt_func)
+    # print(learn.opt.hypers)
 
     output_directory = "experiment_2a"
 
