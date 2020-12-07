@@ -154,6 +154,33 @@ def plot_accuracy(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs
 # Cell
 @patch
 @delegates(subplots)
+def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
+    metrics = np.stack(self.values)
+    names = self.metric_names[1:-1]
+    n = len(names) - 1
+    if nrows is None and ncols is None:
+        nrows = int(math.sqrt(n))
+        ncols = int(np.ceil(n / nrows))
+    elif nrows is None: nrows = int(np.ceil(n / ncols))
+    elif ncols is None: ncols = int(np.ceil(n / nrows))
+    figsize = figsize or (ncols * 6, nrows * 4)
+    fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
+    axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
+    for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
+        ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
+        ax.set_title(name if i > 1 else 'loss curves')
+        if name is "accuracy":
+            ax.set_ylabel("accuracy (%)")
+        if i is 0:
+            ax.set_ylabel("loss value")
+        ax.legend(loc='best')
+        ax.set_xlabel("n (epoch nr. = n + 1)")
+        ax.set_xlim(0, len(metrics[:, i])-1)
+    plt.show()
+
+# Cell
+@patch
+@delegates(subplots)
 def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
 
@@ -167,8 +194,8 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
+
     for epoch_nr in epochs:
-        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         print(learn.opt)
         print(learn.wd)
         print(learn.moms)
@@ -176,13 +203,13 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
         print(learn.opt_func)
         print(learn.opt.hypers)
 
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
         learn.fit(epoch_nr)
         learn.recorder.plot_accuracy(nrows=1, ncols=1)
-        plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
         plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
         clear_pyplot_memory()
 
@@ -192,8 +219,13 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
         plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
         clear_pyplot_memory()
 
+        learn.recorder.plot_metrics()
+        plt.subplots_adjust(right=0.88)
+        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+        clear_pyplot_memory()
 
-def experiment_1b():
+def experiment_1b(epochs, output_directory="experiment_1b"):
     path = untar_data(URLs.PETS)
     print(path.ls())
     files = get_image_files(path / "images")
@@ -202,19 +234,33 @@ def experiment_1b():
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
-    learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(10)
-    learn.recorder.plot_loss()
-    plt.savefig(f'plot_loss.png')
-    clear_pyplot_memory()
 
-    learn.predict(files[0])
-    learn.show_results()
-    plt.savefig(f'plot_predictions.png')
-    clear_pyplot_memory()
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=error_rate)
+
+        learn.fine_tune(epoch_nr)
+        learn.fit(epoch_nr)
+        learn.recorder.plot_accuracy(nrows=1, ncols=1)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
+        clear_pyplot_memory()
+
+        learn.recorder.plot_loss()
+        plt.xlabel("iterations")
+        plt.ylabel("loss")
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
+        clear_pyplot_memory()
+
+        learn.recorder.plot_metrics()
+        plt.subplots_adjust(right=0.88)
+        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+        clear_pyplot_memory()
 
 
-def experiment_2a(epochs):
+def experiment_2a(epochs, output_directory="experiment_2a"):
     path = "dataset/"
     files = get_image_files("dataset")
 
@@ -225,7 +271,6 @@ def experiment_2a(epochs):
                            item_tfms=Resize(224))
     dls = data_block.dataloaders(Path(path), bs=10)
 
-    learn = cnn_learner(dls, resnet18, metrics=[accuracy])
     print(learn.opt)
     print(learn.wd)
     print(learn.moms)
@@ -233,18 +278,33 @@ def experiment_2a(epochs):
     print(learn.opt_func)
     print(learn.opt.hypers)
 
-    learn.fit(epochs)
+    output_directory = "experiment_2a"
 
-    learn.recorder.plot_accuracy(nrows=1, ncols=1)
-    plt.subplots_adjust(right=0.88)
-    plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
-    if not os.path.exists('experiment_2a'):
-        os.makedirs('experiment_2a')
-    plt.savefig(f'experiment_2a/{epochs}.png')
-    clear_pyplot_memory()
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+
+        learn.fit(epoch_nr)
+        learn.recorder.plot_accuracy(nrows=1, ncols=1)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
+        clear_pyplot_memory()
+
+        learn.recorder.plot_loss()
+        plt.xlabel("iterations")
+        plt.ylabel("loss")
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
+        clear_pyplot_memory()
+
+        learn.recorder.plot_metrics()
+        plt.subplots_adjust(right=0.88)
+        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+        clear_pyplot_memory()
 
 
-def experiment_2b(epoch_values):
+def experiment_2b(epoch_values, output_directory="experiment_2b"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
     path = "dataset/"
@@ -260,38 +320,33 @@ def experiment_2b(epoch_values):
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
-    for epochs in epoch_values:
+    for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-        learn.fine_tune(epochs)
-        save_loss_plot(learn, epochs)
+        learn.fit(epoch_nr)
+        learn.recorder.plot_accuracy(nrows=1, ncols=1)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
+        clear_pyplot_memory()
+
+        learn.recorder.plot_loss()
+        plt.xlabel("iterations")
+        plt.ylabel("loss")
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
         clear_pyplot_memory()
 
         learn.recorder.plot_metrics()
         plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
-        if not os.path.exists('metrics'):
-            os.makedirs('metrics')
-        plt.savefig(f'metrics/{epochs}.png')
+        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
         clear_pyplot_memory()
 
-        learn.predict(files[0])
-        learn.show_results()
-        plt.savefig(f'{epochs}_epochs_plot_predictions.png')
-        clear_pyplot_memory()
-
-        interp = ClassificationInterpretation.from_learner(learn)
-        interp.plot_top_losses(20, nrows=5)
-        plt.savefig(f'{epochs}_epochs_plot_top_losses.png')
-        clear_pyplot_memory()
-
-    metrics_image_files = listdir("metrics")
-    metrics_image_file_paths = []
-    for image_file in metrics_image_files:
-        metrics_image_file_paths.append("metrics/" + image_file)
-    metrics_image_file_paths.sort()
-
-    metrics_overview_image = merge_images_vertically(metrics_image_file_paths)
-    metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
+    # metrics_image_files = listdir("metrics")
+    # metrics_image_file_paths = []
+    # for image_file in metrics_image_files:
+    #     metrics_image_file_paths.append("metrics/" + image_file)
+    # metrics_image_file_paths.sort()
+    #
+    # metrics_overview_image = merge_images_vertically(metrics_image_file_paths)
+    # metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
 
     # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     # x, = first(dls.test_dl([img]))
@@ -373,8 +428,11 @@ def experiment_2b(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_1a([5, 10, 50, 1000])
-    # experiment_2a(4)
+    experiment_1a([5, 10],"test_1a")
+    experiment_1b([5, 10],"test_1b")
+    experiment_2a([5,10],"test_2a")
+    experiment_2b([5,10],"test_2b")
+
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
