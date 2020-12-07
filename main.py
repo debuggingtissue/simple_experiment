@@ -93,7 +93,7 @@ def save_loss_plot(learner, epochs):
 def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
     metrics = np.stack(self.values)
     names = self.metric_names[1:-1]
-    n = len(names) - 1 - 1
+    n = len(names)
     if nrows is None and ncols is None:
         nrows = int(math.sqrt(n))
         ncols = int(np.ceil(n / nrows))
@@ -148,15 +148,16 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
             os.makedirs(output_directory)
 
         learn.fit(epoch_nr)
-        learn.recorder.plot_metrics()
+        learn.recorder.plot_metrics(nrows=1, ncols=1)
         plt.subplots_adjust(right=0.88)
         plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
         plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
         clear_pyplot_memory()
 
-        interp = ClassificationInterpretation.from_learner(learn)
-        interp.plot_top_losses(20, nrows=5)
-        plt.savefig(f'{output_directory}/{epochs}_epochs_loss.png')
+        learn.recorder.plot_loss()
+        plt.xlabel("iterations")
+        plt.ylabel("loss")
+        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
         clear_pyplot_memory()
 
 
