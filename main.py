@@ -90,7 +90,7 @@ def save_loss_plot(learner, epochs):
 # Cell
 @patch
 @delegates(subplots)
-def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
+def plot_accuracy(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
     metrics = np.stack(self.values)
     names = self.metric_names[1:-1]
     n = len(names)
@@ -104,20 +104,52 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
     figsize = figsize or (ncols * 6, nrows * 4)
     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
-    for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
-        if i is 0:
-            continue
-        ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
-        ax.set_title(name if i > 1 else 'loss curve')
-        ax.set_xlim(0, len(metrics[:, i]) - 1)
-        ax.set_xlabel("epoch nr.")
-        if name is "accuracy":
-            ax.set_ylabel("accuracy (%)")
-        if i is 0:
-            ax.set_ylabel("loss value")
-        ax.legend(loc='best')
+    # print(metrics)
+    # print(names)
+    # print(axs)
+
+    axs[0].plot(metrics[:, 2], color='#ff7f0e', label='valid')
+    axs[0].set_title(names[2])
+    axs[0].set_xlim(0, len(metrics[:, 2]) - 1)
+    axs[0].set_xlabel("n (epoch nr. = n + 1)")
+    axs[0].set_ylabel("accuracy (%)")
+    axs[0].legend(loc='best')
+
     plt.show()
 
+# def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
+#     metrics = np.stack(self.values)
+#     names = self.metric_names[1:-1]
+#     n = len(names)
+#     if nrows is None and ncols is None:
+#         nrows = int(math.sqrt(n))
+#         ncols = int(np.ceil(n / nrows))
+#     elif nrows is None:
+#         nrows = int(np.ceil(n / ncols))
+#     elif ncols is None:
+#         ncols = int(np.ceil(n / nrows))
+#     figsize = figsize or (ncols * 6, nrows * 4)
+#     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
+#     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
+#     print(metrics)
+#     print(names)
+#     for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
+#         print(i)
+#         print(name)
+#         print(ax)
+#         if i is 0 or i is 1:
+#             print("skips")
+#             continue
+#         ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
+#         ax.set_title(name if i > 1 else 'loss curve')
+#         ax.set_xlim(1, len(metrics[:, i]))
+#         ax.set_xlabel("epoch nr.")
+#         if name is "accuracy":
+#             ax.set_ylabel("accuracy (%)")
+#         if i is 0:
+#             ax.set_ylabel("loss value")
+#         ax.legend(loc='best')
+#     plt.show()
 
 # Cell
 @patch
@@ -148,7 +180,7 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
             os.makedirs(output_directory)
 
         learn.fit(epoch_nr)
-        learn.recorder.plot_metrics(nrows=1, ncols=1)
+        learn.recorder.plot_accuracy(nrows=1, ncols=1)
         plt.subplots_adjust(right=0.88)
         plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
         plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
@@ -203,7 +235,7 @@ def experiment_2a(epochs):
 
     learn.fit(epochs)
 
-    learn.recorder.plot_metrics()
+    learn.recorder.plot_accuracy(nrows=1, ncols=1)
     plt.subplots_adjust(right=0.88)
     plt.text(0.89, 0.5, f'epochs: {epochs}', fontsize=12, transform=plt.gcf().transFigure)
     if not os.path.exists('experiment_2a'):
@@ -341,8 +373,8 @@ def experiment_2b(epoch_values):
 
 
 if __name__ == '__main__':
-    experiment_1a([5, 10, 50])
-    # experiment_2a(2)
+    experiment_1a([5, 10, 50, 1000])
+    # experiment_2a(4)
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
