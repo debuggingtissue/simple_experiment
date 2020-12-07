@@ -117,41 +117,6 @@ def plot_accuracy(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs
 
     plt.show()
 
-
-# def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
-#     metrics = np.stack(self.values)
-#     names = self.metric_names[1:-1]
-#     n = len(names)
-#     if nrows is None and ncols is None:
-#         nrows = int(math.sqrt(n))
-#         ncols = int(np.ceil(n / nrows))
-#     elif nrows is None:
-#         nrows = int(np.ceil(n / ncols))
-#     elif ncols is None:
-#         ncols = int(np.ceil(n / nrows))
-#     figsize = figsize or (ncols * 6, nrows * 4)
-#     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
-#     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
-#     print(metrics)
-#     print(names)
-#     for i, (name, ax) in enumerate(zip(names, [axs[0]] + axs)):
-#         print(i)
-#         print(name)
-#         print(ax)
-#         if i is 0 or i is 1:
-#             print("skips")
-#             continue
-#         ax.plot(metrics[:, i], color='#1f77b4' if i == 0 else '#ff7f0e', label='valid' if i > 0 else 'train')
-#         ax.set_title(name if i > 1 else 'loss curve')
-#         ax.set_xlim(1, len(metrics[:, i]))
-#         ax.set_xlabel("epoch nr.")
-#         if name is "accuracy":
-#             ax.set_ylabel("accuracy (%)")
-#         if i is 0:
-#             ax.set_ylabel("loss value")
-#         ax.legend(loc='best')
-#     plt.show()
-
 # Cell
 @patch
 @delegates(subplots)
@@ -228,10 +193,9 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
         os.makedirs(output_directory)
 
     for epoch_nr in epochs:
-        learn = cnn_learner(dls, resnet18, metrics=error_rate)
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
 
         learn.fine_tune(epoch_nr)
-        learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
 
 
@@ -259,7 +223,6 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
 
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
 
@@ -285,7 +248,7 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
 
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-        learn.fit(epoch_nr)
+        learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
 
 
@@ -395,10 +358,10 @@ def save_plots(learn, epoch_nr, output_directory):
 
 
 if __name__ == '__main__':
-    experiment_1a([1, 2], "test_1a")
-    experiment_1b([1, 2], "test_1b")
-    experiment_2a([1, 2], "test_2a")
-    experiment_2b([1, 2], "test_2b")
+    experiment_1a([5, 10, 30, 50, 100, 1000], "e_1a")
+    experiment_1b([5, 10, 30, 50, 100, 1000], "e_1b")
+    experiment_2a([5, 10, 30, 50, 100, 1000], "e_2a")
+    experiment_2b([5, 10, 30, 50, 100, 1000], "e_2b")
 
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
