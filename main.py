@@ -117,6 +117,7 @@ def plot_accuracy(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs
 
     plt.show()
 
+
 # def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs):
 #     metrics = np.stack(self.values)
 #     names = self.metric_names[1:-1]
@@ -161,8 +162,10 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
     if nrows is None and ncols is None:
         nrows = int(math.sqrt(n))
         ncols = int(np.ceil(n / nrows))
-    elif nrows is None: nrows = int(np.ceil(n / ncols))
-    elif ncols is None: ncols = int(np.ceil(n / nrows))
+    elif nrows is None:
+        nrows = int(np.ceil(n / ncols))
+    elif ncols is None:
+        ncols = int(np.ceil(n / nrows))
     figsize = figsize or (ncols * 6, nrows * 4)
     fig, axs = subplots(nrows, ncols, figsize=figsize, **kwargs)
     axs = [ax if i < n else ax.set_axis_off() for i, ax in enumerate(axs.flatten())][:n]
@@ -175,8 +178,9 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
             ax.set_ylabel("loss value")
         ax.legend(loc='best')
         ax.set_xlabel("n (epoch nr. = n + 1)")
-        ax.set_xlim(0, len(metrics[:, i])-1)
+        ax.set_xlim(0, len(metrics[:, i]) - 1)
     plt.show()
+
 
 # Cell
 @patch
@@ -194,7 +198,6 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
-
     for epoch_nr in epochs:
         # print(learn.opt)
         # print(learn.wd)
@@ -209,21 +212,8 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
             os.makedirs(output_directory)
 
         learn.fit(epoch_nr)
-        learn.recorder.plot_accuracy(nrows=1, ncols=1)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
-        clear_pyplot_memory()
+        save_plots(learn, epoch_nr, output_directory)
 
-        learn.recorder.plot_loss()
-        plt.xlabel("iterations")
-        plt.ylabel("loss")
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
-        clear_pyplot_memory()
-
-        learn.recorder.plot_metrics()
-        plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
-        clear_pyplot_memory()
 
 def experiment_1b(epochs, output_directory="experiment_1b"):
     path = untar_data(URLs.PETS)
@@ -234,7 +224,6 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
-
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
@@ -243,21 +232,7 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
         learn.fine_tune(epoch_nr)
         learn.fit(epoch_nr)
-        learn.recorder.plot_accuracy(nrows=1, ncols=1)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
-        clear_pyplot_memory()
-
-        learn.recorder.plot_loss()
-        plt.xlabel("iterations")
-        plt.ylabel("loss")
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
-        clear_pyplot_memory()
-
-        learn.recorder.plot_metrics()
-        plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
-        clear_pyplot_memory()
+        save_plots(learn, epoch_nr, output_directory)
 
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
@@ -287,21 +262,7 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
 
         learn.fit(epoch_nr)
-        learn.recorder.plot_accuracy(nrows=1, ncols=1)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
-        clear_pyplot_memory()
-
-        learn.recorder.plot_loss()
-        plt.xlabel("iterations")
-        plt.ylabel("loss")
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
-        clear_pyplot_memory()
-
-        learn.recorder.plot_metrics()
-        plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
-        clear_pyplot_memory()
+        save_plots(learn, epoch_nr, output_directory)
 
 
 def experiment_2b(epoch_values, output_directory="experiment_2b"):
@@ -323,21 +284,25 @@ def experiment_2b(epoch_values, output_directory="experiment_2b"):
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fit(epoch_nr)
-        learn.recorder.plot_accuracy(nrows=1, ncols=1)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
-        clear_pyplot_memory()
+        save_plots(learn, epoch_nr, output_directory)
 
-        learn.recorder.plot_loss()
-        plt.xlabel("iterations")
-        plt.ylabel("loss")
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
-        clear_pyplot_memory()
 
-        learn.recorder.plot_metrics()
-        plt.subplots_adjust(right=0.88)
-        plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-        plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
-        clear_pyplot_memory()
+def save_plots(learn, epoch_nr, output_directory):
+    learn.recorder.plot_accuracy(nrows=1, ncols=1)
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
+    clear_pyplot_memory()
+
+    learn.recorder.plot_loss()
+    plt.xlabel("iterations")
+    plt.ylabel("loss")
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
+    clear_pyplot_memory()
+
+    learn.recorder.plot_metrics()
+    plt.subplots_adjust(right=0.88)
+    plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+    clear_pyplot_memory()
 
     # metrics_image_files = listdir("metrics")
     # metrics_image_file_paths = []
@@ -428,10 +393,10 @@ def experiment_2b(epoch_values, output_directory="experiment_2b"):
 
 
 if __name__ == '__main__':
-    experiment_1a([5, 10],"test_1a")
-    experiment_1b([5, 10],"test_1b")
-    experiment_2a([5,10],"test_2a")
-    experiment_2b([5,10],"test_2b")
+    experiment_1a([5, 10], "test_1a")
+    experiment_1b([5, 10], "test_1b")
+    experiment_2a([5, 10], "test_2a")
+    experiment_2b([5, 10], "test_2b")
 
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
