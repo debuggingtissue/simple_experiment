@@ -264,7 +264,7 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
         save_plots(learn, epoch_nr, output_directory)
 
 
-def experiment_2b(epoch_values, output_directory="experiment_2b"):
+def experiment_2b(epochs, output_directory="experiment_2b"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
     path = "dataset/"
@@ -279,6 +279,9 @@ def experiment_2b(epoch_values, output_directory="experiment_2b"):
     dls.show_batch()
     plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
 
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
