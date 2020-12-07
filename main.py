@@ -253,7 +253,6 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
     # print(learn.opt_func)
     # print(learn.opt.hypers)
 
-    output_directory = "experiment_2a"
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -393,10 +392,10 @@ def save_plots(learn, epoch_nr, output_directory):
 
 
 if __name__ == '__main__':
-    experiment_1a([5, 10], "test_1a")
-    experiment_1b([5, 10], "test_1b")
-    experiment_2a([5, 10], "test_2a")
-    experiment_2b([5, 10], "test_2b")
+    experiment_1a([1, 2], "test_1a")
+    experiment_1b([1, 2], "test_1b")
+    experiment_2a([1, 2], "test_2a")
+    experiment_2b([1, 2], "test_2b")
 
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
