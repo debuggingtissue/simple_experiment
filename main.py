@@ -358,10 +358,10 @@ def save_plots(learn, epoch_nr, output_directory):
 
 
 if __name__ == '__main__':
-    experiment_1a([5, 10, 30, 50, 100, 500, 1000], "e_1a")
-    experiment_1b([5, 10, 30, 50, 100, 500, 1000], "e_1b")
-    experiment_2a([5, 10, 30, 50, 100, 500, 1000], "e_2a")
-    experiment_2b([5, 10, 30, 50, 100, 500, 1000], "e_2b")
+    # experiment_1a([5, 10, 30, 50, 100, 500], "e_1a")
+    experiment_1b([5, 10, 30, 50, 100, 500], "e_1b")
+    experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
+    experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
 
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
