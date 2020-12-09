@@ -200,8 +200,8 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
-    path = "dataset/"
-    files = get_image_files("dataset")
+    path = "dataset_density/"
+    files = get_image_files("dataset_density")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -230,8 +230,8 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
 def experiment_2b(epochs, output_directory="experiment_2b"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
-    path = "dataset/"
-    files = get_image_files("dataset")
+    path = "dataset_density/"
+    files = get_image_files("dataset_density")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -250,6 +250,59 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
+
+
+def experiment_3a(epochs, output_directory="experiment_3a"):
+    path = "dataset_SPOP_balanced_subset/"
+    files = get_image_files("dataset_SPOP_balanced_subset")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+
+    # print(learn.opt)
+    # print(learn.wd)
+    # print(learn.moms)
+    # print(learn.lr)
+    # print(learn.opt_func)
+    # print(learn.opt.hypers)
+
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fit(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory)
+
+def experiment_3b(epochs, output_directory="experiment_3b"):
+    # path = untar_data(URLs.PETS)
+    # print(path.ls())
+    path = "dataset_SPOP_balanced_subset/"
+    files = get_image_files("dataset_SPOP_balanced_subset")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory)
+
 
 
 def save_plots(learn, epoch_nr, output_directory):
