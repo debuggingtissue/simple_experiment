@@ -117,6 +117,7 @@ def plot_accuracy(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs
 
     plt.show()
 
+
 # Cell
 @patch
 @delegates(subplots)
@@ -217,7 +218,6 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
     # print(learn.opt_func)
     # print(learn.opt.hypers)
 
-
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
@@ -252,38 +252,11 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
         save_plots(learn, epoch_nr, output_directory)
 
 
-def experiment_3a(epochs, output_directory="experiment_3a"):
-    path = "dataset_SPOP_balanced_subset/"
-    files = get_image_files("dataset_SPOP_balanced_subset")
-
-    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
-                           get_items=get_image_files,
-                           splitter=RandomSplitter(),
-                           get_y=parent_label,
-                           item_tfms=Resize(224))
-    dls = data_block.dataloaders(Path(path), bs=10)
-
-    # print(learn.opt)
-    # print(learn.wd)
-    # print(learn.moms)
-    # print(learn.lr)
-    # print(learn.opt_func)
-    # print(learn.opt.hypers)
-
-
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    for epoch_nr in epochs:
-        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-        learn.fit(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
-
-def experiment_3b(epochs, output_directory="experiment_3b"):
+def experiment_2c(epochs, output_directory="experiment_2c"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
-    path = "dataset_SPOP_balanced_subset/"
-    files = get_image_files("dataset_SPOP_balanced_subset")
+    path = "dataset_density_balanced_35/"
+    files = get_image_files("dataset_density_balanced_35")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -301,11 +274,87 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
+        save_plots(learn, epoch_nr, output_directory, dls)
 
 
+# def experiment_3a(epochs, output_directory="experiment_3a"):
+#     path = "dataset_SPOP_random_balanced_46/"
+#     files = get_image_files("dataset_SPOP_random_balanced_46")
+#
+#     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+#                            get_items=get_image_files,
+#                            splitter=RandomSplitter(),
+#                            get_y=parent_label,
+#                            item_tfms=Resize(224))
+#     dls = data_block.dataloaders(Path(path), bs=10)
+#
+#     # print(learn.opt)
+#     # print(learn.wd)
+#     # print(learn.moms)
+#     # print(learn.lr)
+#     # print(learn.opt_func)
+#     # print(learn.opt.hypers)
+#
+#
+#     if not os.path.exists(output_directory):
+#         os.makedirs(output_directory)
+#
+#     for epoch_nr in epochs:
+#         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+#         learn.fit(epoch_nr)
+#         save_plots(learn, epoch_nr, output_directory)
 
-def save_plots(learn, epoch_nr, output_directory):
+def experiment_3a(epochs, output_directory="experiment_3a"):
+    # path = untar_data(URLs.PETS)
+    # print(path.ls())
+    path = "dataset_SPOP_random_balanced_46/"
+    files = get_image_files("dataset_SPOP_random_balanced_46")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+
+
+def experiment_3b(epochs, output_directory="experiment_3b"):
+    # path = untar_data(URLs.PETS)
+    # print(path.ls())
+    path = "dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+
+
+def save_plots(learn, epoch_nr, output_directory, dls=None):
     learn.recorder.plot_accuracy(nrows=1, ncols=1)
     plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
     clear_pyplot_memory()
@@ -320,6 +369,10 @@ def save_plots(learn, epoch_nr, output_directory):
     plt.subplots_adjust(right=0.88)
     plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
     plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+    clear_pyplot_memory()
+
+    dls.show_batch()
+    plt.savefig(f'{output_directory}/show_batch.png')
     clear_pyplot_memory()
 
     # metrics_image_files = listdir("metrics")
@@ -415,9 +468,9 @@ if __name__ == '__main__':
     # experiment_1b([5, 10, 30, 50, 100, 500], "e_1b")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
-    experiment_3a([5, 10, 30, 50, 100, 500], "e_3a")
-    experiment_3b([5, 10, 30, 50, 100, 500], "e_2b")
-
+    experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
+    experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
+    experiment_3b([5, 10, 30, 50, 70, 100, 500], "e_3b")
 
     # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
