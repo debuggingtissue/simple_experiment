@@ -9,10 +9,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import os
-import sys
-from PIL import Image, ImageDraw, ImageOps
-from os import listdir
-from os.path import isfile, join
+from utils import image_merger
 
 
 def label_func(f): return f[0].isupper()
@@ -22,23 +19,6 @@ def clear_pyplot_memory():
     plt.clf()
     plt.cla()
     plt.close()
-
-
-def merge_images_horizontally(list_of_image_paths):
-    images = [Image.open(x) for x in list_of_image_paths]
-    widths, heights = zip(*(i.size for i in images))
-
-    total_width = sum(widths)
-    max_height = max(heights)
-
-    new_im = Image.new('RGB', (total_width, max_height))
-
-    x_offset = 0
-    for im in images:
-        new_im.paste(im, (x_offset, 0))
-        x_offset += im.size[0]
-
-    return new_im
 
 
 def experiment_1():
@@ -60,23 +40,6 @@ def experiment_1():
     learn.show_results()
     plt.savefig(f'plot_predictions.png')
     clear_pyplot_memory()
-
-
-def merge_images_vertically(list_of_image_paths):
-    images = [Image.open(x) for x in list_of_image_paths]
-    widths, heights = zip(*(i.size for i in images))
-
-    total_height = sum(heights)
-    max_width = max(widths)
-
-    new_im = Image.new('RGB', (max_width, total_height))
-
-    y_offset = 0
-    for im in images:
-        new_im.paste(im, (0, y_offset))
-        y_offset += im.size[1]
-
-    return new_im
 
 
 def save_loss_plot(learner, epochs):
@@ -375,14 +338,7 @@ def save_plots(learn, epoch_nr, output_directory, dls=None):
     plt.savefig(f'{output_directory}/show_batch.png')
     clear_pyplot_memory()
 
-    # metrics_image_files = listdir("metrics")
-    # metrics_image_file_paths = []
-    # for image_file in metrics_image_files:
-    #     metrics_image_file_paths.append("metrics/" + image_file)
-    # metrics_image_file_paths.sort()
-    #
-    # metrics_overview_image = merge_images_vertically(metrics_image_file_paths)
-    # metrics_overview_image.save("metrics_overview_image" + ".png", 'PNG')
+
 
     # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
     # x, = first(dls.test_dl([img]))
@@ -462,16 +418,28 @@ def save_plots(learn, epoch_nr, output_directory, dls=None):
     # plt.savefig(f'other_layer_activation_plot.png')
     # clear_pyplot_memory()
 
+    def generate_data_block(self):
+        data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                               get_items=get_image_files,
+                               splitter=RandomSplitter(),
+                               get_y=parent_label,
+                               item_tfms=self.transforms["item"],
+                               batch_tfms=self.transforms["batch"])
 
+        return data_block
+
+    def dataloaders(self, dataset_path, batch_size):
+        dls = self.data_block.dataloaders(Path(dataset_path), bs=batch_size)
+        return dls
 if __name__ == '__main__':
     # experiment_1a([5, 10, 30, 50, 100, 500], "e_1a")
     # experiment_1b([5, 10, 30, 50, 100, 500], "e_1b")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
-    # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
-    experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
-    experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
-    experiment_3b([5, 10, 30, 50, 70, 100, 500], "e_3b")
+    # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
+    # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
+    # experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
+    # experiment_3b([5, 10, 30, 50, 70, 100, 500], "e_3b")
+    image_merger.ImageMerger.create_overview_image("e_2c", "lol")
 
-    # experiment_2b([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
