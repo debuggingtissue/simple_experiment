@@ -12,6 +12,106 @@ import os
 from utils import image_merger
 
 
+def save_plots(learn, epoch_nr, output_directory, dls=None):
+    learn.recorder.plot_accuracy(nrows=1, ncols=1)
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
+    clear_pyplot_memory()
+
+    learn.recorder.plot_loss()
+    plt.xlabel("iterations")
+    plt.ylabel("loss")
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
+    clear_pyplot_memory()
+
+    learn.recorder.plot_metrics()
+    plt.subplots_adjust(right=0.88)
+    plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
+    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
+    clear_pyplot_memory()
+
+    dls.show_batch()
+    plt.savefig(f'{output_directory}/show_batch.png')
+    clear_pyplot_memory()
+
+
+    # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
+    # x, = first(dls.test_dl([img]))
+    #
+    # class Hook():
+    #     def __init__(self, m):
+    #         self.hook = m.register_forward_hook(self.hook_func)
+    #     def hook_func(self, m, i, o): self.stored = o.detach().clone()
+    #     def __enter__(self, *args): return self
+    #     def __exit__(self, *args): self.hook.remove()
+    #
+    # with Hook(learn.model[0]) as hook:
+    #     with torch.no_grad(): output = learn.model.eval()(x)
+    #     act = hook.stored
+    #
+    # cam_map = torch.einsum('ck,kij->cij', learn.model[1][-1].weight, act[0])
+    #
+    # x_dec = TensorImage(dls.train.decode((x,))[0][0])
+    # _, ax = plt.subplots()
+    # x_dec.show(ctx=ax)
+    # plt.title("last layer activation")
+    # print(len(cam_map))
+    #
+    # cls = 0
+    # ax.imshow(cam_map[cls].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+    #           interpolation='bilinear', cmap='magma');
+    # plt.savefig(f'layer_last_activation_plot.png')
+    # clear_pyplot_memory()
+    #
+    # print(F.softmax(output, dim=-1))
+    # print(dls.vocab)
+    # # print(x.shape)
+    # # print(learn.model[1][-1].weight.shape)
+    # # print(act.shape)
+    # # cam_map.shape
+    # print(learn.model[0])
+    # class HookBwd():
+    #     def __init__(self, m):
+    #         self.hook = m.register_backward_hook(self.hook_func)
+    #     def hook_func(self, m, gi, go): self.stored = go[0].detach().clone()
+    #     def __enter__(self, *args): return self
+    #     def __exit__(self, *args): self.hook.remove()
+    #
+    # for layer_nr in [0, 4, 5, 6, 7]:
+    #     print(learn.model[0][layer_nr])
+    #     with HookBwd(learn.model[0][layer_nr]) as hookg:
+    #         with Hook(learn.model[0][layer_nr]) as hook:
+    #             output = learn.model.eval()(x)
+    #             act = hook.stored
+    #         output[0, cls].backward()
+    #         grad = hookg.stored
+    #
+    #     w = grad[0].mean(dim=[1, 2], keepdim=True)
+    #     cam_map = (w * act[0]).sum(0)
+    #
+    #     _, ax = plt.subplots()
+    #     x_dec.show(ctx=ax)
+    #     ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+    #               interpolation='bilinear', cmap='magma');
+    #     plt.savefig(f'layer_{layer_nr}_activation_plot.png')
+    #     clear_pyplot_memory()
+
+    # with HookBwd(learn.model[0][-5]) as hookg:
+    #     with Hook(learn.model[0][-5]) as hook:
+    #         output = learn.model.eval()(x)
+    #         act = hook.stored
+    #     output[0, cls].backward()
+    #     grad = hookg.stored
+    #
+    # w = grad[0].mean(dim=[1, 2], keepdim=True)
+    # cam_map = (w * act[0]).sum(0)
+    #
+    # _, ax = plt.subplots()
+    # x_dec.show(ctx=ax)
+    # ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
+    #           interpolation='bilinear', cmap='magma')
+    # plt.savefig(f'other_layer_activation_plot.png')
+    # clear_pyplot_memory()
+
 def label_func(f): return f[0].isupper()
 
 
@@ -142,6 +242,7 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
 
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
+        learn.export()
 
 
 def experiment_1b(epochs, output_directory="experiment_1b"):
@@ -161,6 +262,8 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
+        learn.export()
+
 
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
@@ -188,6 +291,8 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
+        learn.export()
+
 
 
 def experiment_2b(epochs, output_directory="experiment_2b"):
@@ -213,6 +318,8 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
+        learn.export()
+
 
 
 def experiment_2c(epochs, output_directory="experiment_2c"):
@@ -238,6 +345,8 @@ def experiment_2c(epochs, output_directory="experiment_2c"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export()
+
 
 
 # def experiment_3a(epochs, output_directory="experiment_3a"):
@@ -290,6 +399,8 @@ def experiment_3a(epochs, output_directory="experiment_3a"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export()
+
 
 
 def experiment_3b(epochs, output_directory="experiment_3b"):
@@ -315,106 +426,7 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-
-
-def save_plots(learn, epoch_nr, output_directory, dls=None):
-    learn.recorder.plot_accuracy(nrows=1, ncols=1)
-    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_acc.png')
-    clear_pyplot_memory()
-
-    learn.recorder.plot_loss()
-    plt.xlabel("iterations")
-    plt.ylabel("loss")
-    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss.png')
-    clear_pyplot_memory()
-
-    learn.recorder.plot_metrics()
-    plt.subplots_adjust(right=0.88)
-    plt.text(0.89, 0.5, f'epochs: {epoch_nr}', fontsize=12, transform=plt.gcf().transFigure)
-    plt.savefig(f'{output_directory}/{epoch_nr}_epochs_loss_and_acc.png')
-    clear_pyplot_memory()
-
-    dls.show_batch()
-    plt.savefig(f'{output_directory}/show_batch.png')
-    clear_pyplot_memory()
-
-    # img = PILImage.create("cid=TCGA-CH-5763-01Z-00-DX1.7d4eff47-8d99-41d4-87f0-163b2cb034bf###rl=0###x=95204###y=24800###w=800###h=800###pnc=171.png")
-    # x, = first(dls.test_dl([img]))
-    #
-    # class Hook():
-    #     def __init__(self, m):
-    #         self.hook = m.register_forward_hook(self.hook_func)
-    #     def hook_func(self, m, i, o): self.stored = o.detach().clone()
-    #     def __enter__(self, *args): return self
-    #     def __exit__(self, *args): self.hook.remove()
-    #
-    # with Hook(learn.model[0]) as hook:
-    #     with torch.no_grad(): output = learn.model.eval()(x)
-    #     act = hook.stored
-    #
-    # cam_map = torch.einsum('ck,kij->cij', learn.model[1][-1].weight, act[0])
-    #
-    # x_dec = TensorImage(dls.train.decode((x,))[0][0])
-    # _, ax = plt.subplots()
-    # x_dec.show(ctx=ax)
-    # plt.title("last layer activation")
-    # print(len(cam_map))
-    #
-    # cls = 0
-    # ax.imshow(cam_map[cls].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
-    #           interpolation='bilinear', cmap='magma');
-    # plt.savefig(f'layer_last_activation_plot.png')
-    # clear_pyplot_memory()
-    #
-    # print(F.softmax(output, dim=-1))
-    # print(dls.vocab)
-    # # print(x.shape)
-    # # print(learn.model[1][-1].weight.shape)
-    # # print(act.shape)
-    # # cam_map.shape
-    # print(learn.model[0])
-    # class HookBwd():
-    #     def __init__(self, m):
-    #         self.hook = m.register_backward_hook(self.hook_func)
-    #     def hook_func(self, m, gi, go): self.stored = go[0].detach().clone()
-    #     def __enter__(self, *args): return self
-    #     def __exit__(self, *args): self.hook.remove()
-    #
-    # for layer_nr in [0, 4, 5, 6, 7]:
-    #     print(learn.model[0][layer_nr])
-    #     with HookBwd(learn.model[0][layer_nr]) as hookg:
-    #         with Hook(learn.model[0][layer_nr]) as hook:
-    #             output = learn.model.eval()(x)
-    #             act = hook.stored
-    #         output[0, cls].backward()
-    #         grad = hookg.stored
-    #
-    #     w = grad[0].mean(dim=[1, 2], keepdim=True)
-    #     cam_map = (w * act[0]).sum(0)
-    #
-    #     _, ax = plt.subplots()
-    #     x_dec.show(ctx=ax)
-    #     ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
-    #               interpolation='bilinear', cmap='magma');
-    #     plt.savefig(f'layer_{layer_nr}_activation_plot.png')
-    #     clear_pyplot_memory()
-
-    # with HookBwd(learn.model[0][-5]) as hookg:
-    #     with Hook(learn.model[0][-5]) as hook:
-    #         output = learn.model.eval()(x)
-    #         act = hook.stored
-    #     output[0, cls].backward()
-    #     grad = hookg.stored
-    #
-    # w = grad[0].mean(dim=[1, 2], keepdim=True)
-    # cam_map = (w * act[0]).sum(0)
-    #
-    # _, ax = plt.subplots()
-    # x_dec.show(ctx=ax)
-    # ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0),
-    #           interpolation='bilinear', cmap='magma')
-    # plt.savefig(f'other_layer_activation_plot.png')
-    # clear_pyplot_memory()
+        learn.export()
 
 
 def generate_data_block(self):
@@ -445,9 +457,9 @@ if __name__ == '__main__':
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
     # experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
-    # experiment_3b([5, 10, 30, 50, 70, 100, 500], "e_3b")
+    experiment_3b([1,2], "save_model_test")
     # image_merger.ImageMerger.create_overview_image("e_2c", "lol")
-    create_experiment_images(
-        ["e_1a_thesis", "e_1b_thesis", "e_2a_thesis", "e_2b_thesis", "e_2c_thesis", "e_3a_thesis", "e_3b_thesis"], "overview_images")
+    #create_experiment_images(
+    #    ["e_1a_thesis", "e_1b_thesis", "e_2a_thesis", "e_2b_thesis", "e_2c_thesis", "e_3a_thesis", "e_3b_thesis"], "overview_images")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
