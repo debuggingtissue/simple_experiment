@@ -217,6 +217,26 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
 def plot_metrics(self: Learner, **kwargs):
     self.recorder.plot_metrics(**kwargs)
 
+def generate_data_block(self):
+    dat_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                          get_items=get_image_files,
+                          splitter=RandomSplitter(),
+                          get_y=parent_label,
+                          item_tfms=self.transforms["item"],
+                          batch_tfms=self.transforms["batch"])
+
+    return data_block
+
+
+def dataloaders(self, dataset_path, batch_size):
+    dls = self.data_block.dataloaders(Path(dataset_path), bs=batch_size)
+    return dls
+
+
+def create_experiment_images(experiment_result_directory_paths, output_directory):
+    for experiment_result_directory_path in experiment_result_directory_paths:
+        image_merger.ImageMerger.create_overview_image(experiment_result_directory_path, output_directory)
+
 
 def experiment_1a(epochs, output_directory="experiment_1a"):
     path = untar_data(URLs.PETS)
@@ -242,7 +262,9 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
 
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
-        learn.export(fname=output_directory + "/export.pkl")
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
+
+    test
 
 
 def experiment_1b(epochs, output_directory="experiment_1b"):
@@ -262,7 +284,7 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
 
@@ -291,7 +313,7 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
 
@@ -318,7 +340,7 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
 
@@ -345,7 +367,7 @@ def experiment_2c(epochs, output_directory="experiment_2c"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
 
@@ -399,7 +421,7 @@ def experiment_3a(epochs, output_directory="experiment_3a"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
 
@@ -429,35 +451,14 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
-def generate_data_block(self):
-    dat_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
-                          get_items=get_image_files,
-                          splitter=RandomSplitter(),
-                          get_y=parent_label,
-                          item_tfms=self.transforms["item"],
-                          batch_tfms=self.transforms["batch"])
-
-    return data_block
-
-
-def dataloaders(self, dataset_path, batch_size):
-    dls = self.data_block.dataloaders(Path(dataset_path), bs=batch_size)
-    return dls
-
-
-def create_experiment_images(experiment_result_directory_paths, output_directory):
-    for experiment_result_directory_path in experiment_result_directory_paths:
-        image_merger.ImageMerger.create_overview_image(experiment_result_directory_path, output_directory)
-
-
 if __name__ == '__main__':
-    # experiment_1a([5, 10, 30, 50, 100, 500], "e_1a")
-    # experiment_1b([5, 10, 30, 50, 100, 500], "e_1b")
+    experiment_1a([50], "e_1a")
+    experiment_1b([30], "e_1b")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
     # experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
-    experiment_3b([1,2], "save_model_test")
+    #experiment_3b([1,2], "save_model_test")
     # image_merger.ImageMerger.create_overview_image("e_2c", "lol")
     #create_experiment_images(
     #    ["e_1a_thesis", "e_1b_thesis", "e_2a_thesis", "e_2b_thesis", "e_2c_thesis", "e_3a_thesis", "e_3b_thesis"], "overview_images")
