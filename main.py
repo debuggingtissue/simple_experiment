@@ -243,9 +243,6 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
     print(path.ls())
     files = get_image_files(path / "images")
     dls = ImageDataLoaders.from_name_func(path, files, label_func, item_tfms=Resize(224))
-    dls.show_batch()
-    plt.savefig(f'show_batch.png')
-    clear_pyplot_memory()
 
     for epoch_nr in epochs:
         # print(learn.opt)
@@ -261,10 +258,10 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
             os.makedirs(output_directory)
 
         learn.fit(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
+        save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
-    test
+
 
 
 def experiment_1b(epochs, output_directory="experiment_1b"):
@@ -272,9 +269,6 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
     print(path.ls())
     files = get_image_files(path / "images")
     dls = ImageDataLoaders.from_name_func(path, files, label_func, item_tfms=Resize(224))
-    dls.show_batch()
-    plt.savefig(f'show_batch.png')
-    clear_pyplot_memory()
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -283,7 +277,7 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
 
         learn.fine_tune(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
+        save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
 
 
@@ -457,7 +451,7 @@ if __name__ == '__main__':
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
-    # experiment_3a([5, 10, 30, 50, 70, 100, 500], "e_3a")
+    # experiment_3a([5, 10, 30, 50, 70, 100, 500 ], "e_3a")
     #experiment_3b([1,2], "save_model_test")
     # image_merger.ImageMerger.create_overview_image("e_2c", "lol")
     #create_experiment_images(
