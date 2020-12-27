@@ -278,8 +278,7 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export(fname=output_directory + f"/{epoch_nr}_export.pkl")
-
+        learn.export(output_directory + f"/{epoch_nr}_export.pkl")
 
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
@@ -446,8 +445,8 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
 
 
 if __name__ == '__main__':
-    experiment_1b([30], "e_1b")
-    experiment_1a([50], "e_1a")
+    experiment_1b([1], "e_1b")
+    #experiment_1a([50], "e_1a")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
