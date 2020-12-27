@@ -278,8 +278,7 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
 
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export(output_directory + f"/{epoch_nr}_export.pkl")
-
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
     path = "dataset_density/"
