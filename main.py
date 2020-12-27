@@ -242,7 +242,7 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
 
         learn.fit(epoch_nr)
         save_plots(learn, epoch_nr, output_directory)
-        learn.export()
+        learn.export(fname=output_directory + "/export.pkl")
 
 
 def experiment_1b(epochs, output_directory="experiment_1b"):
@@ -426,7 +426,7 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export()
+        learn.export(fname=output_directory + f"/{epoch}_export.pkl")
 
 
 def generate_data_block(self):
