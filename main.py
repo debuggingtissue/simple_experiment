@@ -540,7 +540,7 @@ def experiment_1b_inference():
 if __name__ == '__main__':
     # experiment_1b([30], "e_1b")
     # experiment_1a([50], "e_1a")
-    experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
+    experiment_3c([5, 10, 30, 50, 100, 500], "e_3c")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
