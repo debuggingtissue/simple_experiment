@@ -126,28 +126,6 @@ def clear_pyplot_memory():
     plt.cla()
     plt.close()
 
-
-def experiment_1():
-    path = untar_data(URLs.PETS)
-    print(path.ls())
-    files = get_image_files(path / "images")
-    dls = ImageDataLoaders.from_name_func(path, files, label_func, item_tfms=Resize(224))
-    dls.show_batch()
-    plt.savefig(f'show_batch.png')
-    clear_pyplot_memory()
-
-    learn = cnn_learner(dls, resnet18, metrics=error_rate)
-    learn.fine_tune(10)
-    learn.recorder.plot_loss()
-    plt.savefig(f'plot_loss.png')
-    clear_pyplot_memory()
-
-    learn.predict(files[0])
-    learn.show_results()
-    plt.savefig(f'plot_predictions.png')
-    clear_pyplot_memory()
-
-
 def save_loss_plot(learner, epochs):
     learner.recorder.plot_loss()
     plt.xlabel("iterations")
@@ -268,8 +246,6 @@ def experiment_1a(epochs, output_directory="experiment_1a"):
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
-
-
 def experiment_1b(epochs, output_directory="experiment_1b"):
     path = untar_data(URLs.PETS)
     print(path.ls())
@@ -287,8 +263,8 @@ def experiment_1b(epochs, output_directory="experiment_1b"):
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 def experiment_2a(epochs, output_directory="experiment_2a"):
-    path = "dataset_density/"
-    files = get_image_files("dataset_density")
+    path = "datasets/density/main_dataset/"
+    files = get_image_files("datasets/density/main_dataset")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -318,8 +294,8 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
 def experiment_2b(epochs, output_directory="experiment_2b"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
-    path = "dataset_density/"
-    files = get_image_files("dataset_density")
+    path = "datasets/density/main_dataset/"
+    files = get_image_files("datasets/density/main_dataset")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -345,8 +321,8 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
 def experiment_2c(epochs, output_directory="experiment_2c"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
-    path = "dataset_density_balanced_35/"
-    files = get_image_files("dataset_density_balanced_35")
+    path = "datasets/density/balanced_35/"
+    files = get_image_files("datasets/density/balanced_35")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -397,10 +373,9 @@ def experiment_2c(epochs, output_directory="experiment_2c"):
 #         save_plots(learn, epoch_nr, output_directory)
 
 def experiment_3a(epochs, output_directory="experiment_3a"):
-    # path = untar_data(URLs.PETS)
-    # print(path.ls())
-    path = "dataset_SPOP_random_balanced_46/"
-    files = get_image_files("dataset_SPOP_random_balanced_46")
+
+    path = "datasets/SPOP/dataset_SPOP_random_balanced_46/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_random_balanced_46")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -424,10 +399,8 @@ def experiment_3a(epochs, output_directory="experiment_3a"):
 
 
 def experiment_3b(epochs, output_directory="experiment_3b"):
-    # path = untar_data(URLs.PETS)
-    # print(path.ls())
-    path = "dataset_SPOP_v2_random_balanced_35/"
-    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+    path = "datasets/SPOP/dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_v2_random_balanced_35")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -451,8 +424,8 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
 def experiment_3b(epochs, output_directory="experiment_3b"):
     # path = untar_data(URLs.PETS)
     # print(path.ls())
-    path = "dataset_SPOP_v2_random_balanced_35/"
-    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+    path = "datasets/SPOP/dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_v2_random_balanced_35")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
@@ -472,7 +445,6 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         learn.fine_tune(epoch_nr)
         save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
-
 
 def experiment_3c(epochs, output_directory="experiment_3c"):
     # timg = TensorImage(array(img)).permute(2, 0, 1).float() / 255.
@@ -490,23 +462,62 @@ def experiment_3c(epochs, output_directory="experiment_3c"):
     #_pad_modes = {'zeros': 'constant', 'border': 'edge', 'reflection': 'reflect'}
 
 
-    # path = untar_data(URLs.PETS)
-    # print(path.ls())
-    path = "dataset_SPOP_v2_random_balanced_35/"
-    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+    path = "datasets/SPOP/dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_v2_random_balanced_35")
 
     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
                            get_items=get_image_files,
                            splitter=RandomSplitter(),
                            get_y=parent_label,
                            item_tfms=Resize(224),
-                           batch_tfms=aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0.5, max_warp=0, p_affine=0.7,
-                                                     p_lighting=0.2, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0))
+                           batch_tfms=aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0, max_warp=0, p_affine=0.75,
+                                                     p_lighting=0, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0))
 
     dls = data_block.dataloaders(Path(path), bs=10)
     dls.show_batch()
     plt.savefig(f'show_batch.png')
-    plt.show()
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+
+
+def experiment_3d(epochs, output_directory="experiment_3d"):
+    # timg = TensorImage(array(img)).permute(2, 0, 1).float() / 255.
+    # def _batch_ex(bs): return TensorImage(timg[None].expand(bs, *timg.shape).clone())
+    #
+    # tfms = aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0.5, max_warp=0, p_affine=0.7,
+    #                       p_lighting=0.2, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0)
+    # y = _batch_ex(9)
+    # for t in tfms: y = t(y, split_idx=0)
+    # _, axs = plt.subplots(1, 3, figsize=(12, 3))
+    # for i, ax in enumerate(axs.flatten()):
+    #     show_image(y[i], ctx=ax)
+    # plt.show()
+
+    #_pad_modes = {'zeros': 'constant', 'border': 'edge', 'reflection': 'reflect'}
+
+
+    path = "datasets/SPOP/dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_v2_random_balanced_35")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224),
+                           batch_tfms=aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0, max_warp=0, p_affine=0.75,
+                                                     p_lighting=0, xtra_tfms=None, size=None, mode='bilinear', pad_mode='border', align_corners=True, batch=False, min_scale=1.0))
+
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
     clear_pyplot_memory()
 
     if not os.path.exists(output_directory):
@@ -531,17 +542,27 @@ def experiment_1b_inference():
     print("yolo")
     #learn = cnn_learner(dls, resnet18, metrics=[accuracy])
     learn = load_learner("30_export.pkl")
-    cats = create_image_array_from_directory_path("cat_dog_test_set/dogs")
+    cats = create_image_array_from_directory_path("datasets/cat_dog/cat_dog_test_set/dogs")
     dl = learn.dls.test_dl(cats)
     op = learn.get_preds(dl=dl)
     print(op)
 
 
 if __name__ == '__main__':
-    # experiment_1b([30], "e_1b")
-    # experiment_1a([50], "e_1a")
-    experiment_3c([5, 10, 30, 50, 100, 500], "e_3c")
-    # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
+    experiment_3c([5, 10, 30, 50, 70, 100, 500], "best_e_3c")
+    experiment_3d([5, 10, 30, 50, 70, 100, 500], "best_e_3d")
+    experiment_3b([100], "best_e_3b")
+    experiment_2a([100], "best_e_2a")
+    experiment_2b([100], "best_e_2b")
+    experiment_2c([100], "best_e_2c")
+    experiment_1a([50], "best_e_1a")
+    experiment_1b([30], "best_e_1b")
+
+
+
+
+
+    # experiment_3c([5, 10, 30, 50, 100, 500], "e_3c")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
     # experiment_3a([5, 10, 30, 50, 70, 100, 500 ], "e_3a")
