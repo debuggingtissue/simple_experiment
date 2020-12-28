@@ -474,7 +474,7 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
-def experiment_3c(output_directory="experiment_3c"):
+def experiment_3c(epochs, output_directory="experiment_3c"):
     # timg = TensorImage(array(img)).permute(2, 0, 1).float() / 255.
     # def _batch_ex(bs): return TensorImage(timg[None].expand(bs, *timg.shape).clone())
     #
