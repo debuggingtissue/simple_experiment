@@ -10,6 +10,12 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import os
 from utils import image_merger
+from PIL import Image, ImageDraw, ImageOps
+import os
+from os.path import isfile, join
+import re
+from pathlib import *
+from fastai.learner import load_learner
 
 
 def save_plots(learn, epoch_nr, output_directory, dls=None):
@@ -349,17 +355,17 @@ def experiment_2c(epochs, output_directory="experiment_2c"):
                            item_tfms=Resize(224))
     dls = data_block.dataloaders(Path(path), bs=10)
     dls.show_batch()
-    plt.savefig(f'show_batch.png')
-    clear_pyplot_memory()
-
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    for epoch_nr in epochs:
-        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-        learn.fine_tune(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory, dls)
-        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+    # plt.savefig(f'show_batch.png')
+    # clear_pyplot_memory()
+    #
+    # if not os.path.exists(output_directory):
+    #     os.makedirs(output_directory)
+    #
+    # for epoch_nr in epochs:
+    #     learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+    #     learn.fine_tune(epoch_nr)
+    #     save_plots(learn, epoch_nr, output_directory, dls)
+    #     learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
 
@@ -442,10 +448,99 @@ def experiment_3b(epochs, output_directory="experiment_3b"):
         save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
+def experiment_3b(epochs, output_directory="experiment_3b"):
+    # path = untar_data(URLs.PETS)
+    # print(path.ls())
+    path = "dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224))
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+
+
+def experiment_3c(output_directory="experiment_3c"):
+    # timg = TensorImage(array(img)).permute(2, 0, 1).float() / 255.
+    # def _batch_ex(bs): return TensorImage(timg[None].expand(bs, *timg.shape).clone())
+    #
+    # tfms = aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0.5, max_warp=0, p_affine=0.7,
+    #                       p_lighting=0.2, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0)
+    # y = _batch_ex(9)
+    # for t in tfms: y = t(y, split_idx=0)
+    # _, axs = plt.subplots(1, 3, figsize=(12, 3))
+    # for i, ax in enumerate(axs.flatten()):
+    #     show_image(y[i], ctx=ax)
+    # plt.show()
+
+    #_pad_modes = {'zeros': 'constant', 'border': 'edge', 'reflection': 'reflect'}
+
+
+    # path = untar_data(URLs.PETS)
+    # print(path.ls())
+    path = "dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("dataset_SPOP_v2_random_balanced_35")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224),
+                           batch_tfms=aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=10., min_zoom=1, max_zoom=1, max_lighting=0.5, max_warp=0, p_affine=0.7,
+                                                     p_lighting=0.2, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0))
+
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    plt.show()
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+
+
+
+
+def create_image_array_from_directory_path(path):
+    path = Path(path)
+    file_paths = [PILImage.create(p) for p in path.iterdir() if p.is_file()]
+    print(file_paths)
+    return file_paths
+
+def experiment_1b_inference():
+    print("yolo")
+    #learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+    learn = load_learner("30_export.pkl")
+    cats = create_image_array_from_directory_path("cat_dog_test_set/dogs")
+    dl = learn.dls.test_dl(cats)
+    op = learn.get_preds(dl=dl)
+    print(op)
+
 
 if __name__ == '__main__':
-    experiment_1b([30], "e_1b")
-    experiment_1a([50], "e_1a")
+    # experiment_1b([30], "e_1b")
+    # experiment_1a([50], "e_1a")
+    experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # experiment_2a([5, 10, 30, 50, 100, 500], "e_2a")
     # # experiment_2b([5, 10, 30, 50, 100, 500], "e_2b")
     # experiment_2c([5, 10, 30, 50, 70, 100, 500], "e_2c")
