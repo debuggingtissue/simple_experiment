@@ -286,7 +286,7 @@ def experiment_2a(epochs, output_directory="experiment_2a"):
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fit(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
+        save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
@@ -313,7 +313,7 @@ def experiment_2b(epochs, output_directory="experiment_2b"):
     for epoch_nr in epochs:
         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
         learn.fine_tune(epoch_nr)
-        save_plots(learn, epoch_nr, output_directory)
+        save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
@@ -331,46 +331,19 @@ def experiment_2c(epochs, output_directory="experiment_2c"):
                            item_tfms=Resize(224))
     dls = data_block.dataloaders(Path(path), bs=10)
     dls.show_batch()
-    # plt.savefig(f'show_batch.png')
-    # clear_pyplot_memory()
-    #
-    # if not os.path.exists(output_directory):
-    #     os.makedirs(output_directory)
-    #
-    # for epoch_nr in epochs:
-    #     learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-    #     learn.fine_tune(epoch_nr)
-    #     save_plots(learn, epoch_nr, output_directory, dls)
-    #     learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
 
-
-# def experiment_3a(epochs, output_directory="experiment_3a"):
-#     path = "dataset_SPOP_random_balanced_46/"
-#     files = get_image_files("dataset_SPOP_random_balanced_46")
-#
-#     data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
-#                            get_items=get_image_files,
-#                            splitter=RandomSplitter(),
-#                            get_y=parent_label,
-#                            item_tfms=Resize(224))
-#     dls = data_block.dataloaders(Path(path), bs=10)
-#
-#     # print(learn.opt)
-#     # print(learn.wd)
-#     # print(learn.moms)
-#     # print(learn.lr)
-#     # print(learn.opt_func)
-#     # print(learn.opt.hypers)
-#
-#
-#     if not os.path.exists(output_directory):
-#         os.makedirs(output_directory)
-#
-#     for epoch_nr in epochs:
-#         learn = cnn_learner(dls, resnet18, metrics=[accuracy])
-#         learn.fit(epoch_nr)
-#         save_plots(learn, epoch_nr, output_directory)
 
 def experiment_3a(epochs, output_directory="experiment_3a"):
 
@@ -529,6 +502,34 @@ def experiment_3d(epochs, output_directory="experiment_3d"):
         save_plots(learn, epoch_nr, output_directory, dls)
         learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
 
+def experiment_3e(epochs, output_directory="experiment_3e"):
+
+    path = "datasets/SPOP/dataset_SPOP_v2_random_balanced_35/"
+    files = get_image_files("datasets/SPOP/dataset_SPOP_v2_random_balanced_35")
+
+    data_block = DataBlock(blocks=(ImageBlock, CategoryBlock),
+                           get_items=get_image_files,
+                           splitter=RandomSplitter(),
+                           get_y=parent_label,
+                           item_tfms=Resize(224),
+                           batch_tfms=aug_transforms(mult=1.0, do_flip=True, flip_vert=True, max_rotate=0, min_zoom=1, max_zoom=1, max_lighting=0.2, max_warp=0, p_affine=0,
+                                                     p_lighting=0.75, xtra_tfms=None, size=None, mode='bilinear', pad_mode='zeros', align_corners=True, batch=False, min_scale=1.0))
+
+    dls = data_block.dataloaders(Path(path), bs=10)
+    dls.show_batch()
+    plt.savefig(f'show_batch.png')
+    clear_pyplot_memory()
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    for epoch_nr in epochs:
+        learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+        learn.fine_tune(epoch_nr)
+        save_plots(learn, epoch_nr, output_directory, dls)
+        learn.export(os.path.abspath(output_directory + f"/{epoch_nr}_export.pkl"))
+
+
 
 
 
@@ -540,7 +541,7 @@ def create_image_array_from_directory_path(path):
 
 def experiment_1b_inference():
     print("yolo")
-    #learn = cnn_learner(dls, resnet18, metrics=[accuracy])
+    #learn = cnn_learner(dls, resnet18, metrics=[acc uracy])
     learn = load_learner("30_export.pkl")
     cats = create_image_array_from_directory_path("datasets/cat_dog/cat_dog_test_set/dogs")
     dl = learn.dls.test_dl(cats)
@@ -549,9 +550,11 @@ def experiment_1b_inference():
 
 
 if __name__ == '__main__':
-    experiment_3c([5, 10, 30, 50, 70, 100, 500], "best_e_3c")
-    experiment_3d([5, 10, 30, 50, 70, 100, 500], "best_e_3d")
-    experiment_3b([100], "best_e_3b")
+    # experiment_3c([5, 10, 30, 50, 70, 100, 500], "best_e_3c")
+    # experiment_3d([5, 10, 30, 50, 70, 100, 500], "best_e_3d")
+    # experiment_3b([100], "best_e_3b")
+
+    experiment_3e([5, 10, 30, 50, 70, 100, 500], "best_e_3e")
     experiment_2a([100], "best_e_2a")
     experiment_2b([100], "best_e_2b")
     experiment_2c([100], "best_e_2c")
